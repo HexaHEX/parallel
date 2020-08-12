@@ -5,8 +5,8 @@
 #include <pthread.h>
 #include <time.h>
 
-#define LEFT_END   0
-#define RIGHT_END  10000000
+#define LEFT_B   0
+#define RIGHT_B  1000000
 
 double monteCarlo(long int count){
   int rezult = 0;
@@ -29,16 +29,16 @@ double monteCarlo(long int count){
 
 typedef struct thread_args{
   pthread_t pthread;
-  double left_end;
-  double right_end;
+  double left_b;
+  double right_b;
   double result;
 } thread_args_str;
 
 void* thread_calc(void* args){
-  double left_end = ((thread_args_str*)args)->left_end;
-  double right_end = ((thread_args_str*)args)->right_end;
-//  printf("thread %lu: %f - %f\n", ((thread_args_str*)args)->pthread, left_end, right_end );
-  ((thread_args_str*)args)->result = monteCarlo( right_end - left_end );
+  double left_b = ((thread_args_str*)args)->left_b;
+  double right_b = ((thread_args_str*)args)->right_b;
+//  printf("thread %lu: %f - %f\n", ((thread_args_str*)args)->pthread, left_border, right_border);
+  ((thread_args_str*)args)->result = monteCarlo( right_b - left_b );
 }
 
 void* load(void* args){
@@ -74,8 +74,8 @@ int main(int argc, char* argv[]){
     CPU_ZERO(&cpu_set);
     CPU_SET(i%cpu_number ,&cpu_set);
     thread_args_arr[i].result = 0;
-    thread_args_arr[i].left_end = LEFT_END+(RIGHT_END-LEFT_END)/thread_num*i;
-    thread_args_arr[i].right_end = LEFT_END+(RIGHT_END-LEFT_END)/thread_num*(i+1);
+    thread_args_arr[i].left_b = LEFT_B+(RIGHT_B-LEFT_B)/thread_num*i;
+    thread_args_arr[i].right_b = LEFT_B+(RIGHT_B-LEFT_B)/thread_num*(i+1);
     thread_args_arr[i].pthread = pthread_self();
     pthread_setaffinity_np(thread_args_arr[i].pthread, sizeof(cpu_set_t), &cpu_set);
     pthread_create(&(thread_args_arr[i].pthread), NULL, thread_calc, (void*)&thread_args_arr[i]);
