@@ -5,9 +5,34 @@
 #include <pthread.h>
 #include <time.h>
 
-#define LEFT_B   0
-#define RIGHT_B  1000000
+#define f(x) sin(x)
+#define LEFT_B   0.000001
+#define RIGHT_B  94
+#define STEP 0.0000001
+#define sub  0.0000001
 
+
+double trapez_integration(double left, double right,double subInterval){
+
+ double integration=0, stepSize, k;
+ time_t timer;
+  time(&timer);
+ 
+ stepSize = (right - left)/subInterval;
+
+ //integration = f(left) + f(right);
+
+ for(int i=0; i< (right - left)/subInterval; i++){
+ // k = left + i*subInterval;
+  integration +=  subInterval*(f(left + i*subInterval ));
+ }
+ //integration = integration * stepSize/2;
+ double seconds = difftime(time(NULL), timer );
+ printf("%f, time = %f sec.\n", integration, seconds );
+ return integration;
+
+
+}
 double monteCarlo(long int count){
   int rezult = 0;
   double x,y;
@@ -23,9 +48,10 @@ double monteCarlo(long int count){
           rezult++;
   }
   double seconds = difftime(time(NULL), timer );
-//  printf("%d - %d, time = %f sec.\n", i, rezult, seconds );
+// printf("%d - %d, time = %f sec.\n", i, rezult, seconds );
   return ( (double) rezult) / count;
 }
+
 
 typedef struct thread_args{
   pthread_t pthread;
@@ -37,14 +63,14 @@ typedef struct thread_args{
 void* thread_calc(void* args){
   double left_b = ((thread_args_str*)args)->left_b;
   double right_b = ((thread_args_str*)args)->right_b;
-//  printf("thread %lu: %f - %f\n", ((thread_args_str*)args)->pthread, left_border, right_border);
-  ((thread_args_str*)args)->result = monteCarlo( right_b - left_b );
+  printf("thread %lu: %f - %f\n", ((thread_args_str*)args)->pthread, left_b, right_b);
+  ((thread_args_str*)args)->result = trapez_integration( left_b, right_b,sub );
 }
 
 void* load(void* args){
-  int loader = 0;
+  int loader = LEFT_B;
   while(1)
-    loader*= 3;
+    loader*=  RIGHT_B;
 }
 
 int main(int argc, char* argv[]){
@@ -53,39 +79,48 @@ int main(int argc, char* argv[]){
      printf("Wrong Input!");
      return 0;
   }
-
+	
+  //double answers =// trapez_integration(LEFT_B,RIGHT_B,sub);
+  //printf("%f\n",answers);
+  
+  double answer = 0;
   int thread_num = strtol(argv[1], NULL, 10);
   int cpu_number = get_nprocs();
-  double answer = 0;
+  
   cpu_set_t cpu_set;
   thread_args_str* thread_args_arr = (thread_args_str*)calloc(thread_num, sizeof(thread_args_str));
 
-  for(int i = thread_num; i < cpu_number; i++){
+  for(int i = thread_num; i < cpu_number; ++i){
     CPU_ZERO(&cpu_set);
     CPU_SET(i, &cpu_set);
+
     thread_args_arr[i].pthread = pthread_self();
     pthread_setaffinity_np(thread_args_arr[i].pthread, sizeof(cpu_set_t), &cpu_set);
     pthread_create(&(thread_args_arr[i].pthread), NULL, load, NULL);
   }
 
-  srand( time(NULL) );
+  //srand( time(NULL) );
 
-  for(int i = 0; i < thread_num; i++){
-    CPU_ZERO(&cpu_set);
-    CPU_SET(i%cpu_number ,&cpu_set);
-    thread_args_arr[i].result = 0;
+  for(int i = 0; i < thread_num; ++i){
+    
     thread_args_arr[i].left_b = LEFT_B+(RIGHT_B-LEFT_B)/thread_num*i;
     thread_args_arr[i].right_b = LEFT_B+(RIGHT_B-LEFT_B)/thread_num*(i+1);
+    thread_args_arr[i].result = 0;
     thread_args_arr[i].pthread = pthread_self();
+
+    CPU_ZERO(&cpu_set);
+    CPU_SET(i%cpu_number ,&cpu_set);
+    
+
     pthread_setaffinity_np(thread_args_arr[i].pthread, sizeof(cpu_set_t), &cpu_set);
     pthread_create(&(thread_args_arr[i].pthread), NULL, thread_calc, (void*)&thread_args_arr[i]);
   }
-  for (int i = 0; i < thread_num; i++)
+  for (int i = 0; i < thread_num; ++i)
     pthread_join(thread_args_arr[i].pthread, NULL);
 
-  for (int i = 0; i < thread_num; i++){
+  for (int i = 0; i < thread_num; ++i){
     answer += thread_args_arr[i].result;
 //    printf("%d - %f\n", i, thread_args_arr[i].result );
   }
-    printf("%f\n", 4 * answer / thread_num);
+    printf("%f\n", answer );
 }
