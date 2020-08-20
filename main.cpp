@@ -9,7 +9,7 @@
 #define sub  0.0000001
 #define f(x) cos(x)
 #define LEFT_B 0.000001
-#define RIGHT_B 100
+#define RIGHT_B 92
 
 
 
