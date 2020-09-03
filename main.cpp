@@ -7,11 +7,34 @@
 
 
 #define sub  0.0000001
-#define f(x) cos(x)
+#define f(x) sin(x)
 #define LEFT_B 0.000001
-#define RIGHT_B 92
+#define RIGHT_B 90
 
+// 1sec - 23.9
+//2 sec 13.4 +
+//3 sec 9.05 +
+//4 sec 6.6 + 
+//5 sec 5.3 +
+//6 sec 4.38 +
+//7 sec  3.9 +
+//8 sec
+//9 sec
+//12 2.19 sec +
 
+// 1sec - 24
+//2 sec  12 +
+//3 sec 8.3 +
+//4 sec 6 +
+//5 sec 4,8+
+//6 sec 4.1+
+//7 sec 3.639 +-
+//8 sec 3.1 +
+//9 sec 2,8 (2,9 max)+
+//12 
+//10 2,64 _+-+
+//11 2,27-2,41 2,41 +-
+//12 2,1 +
 
 double trapez_integration(double left, double right,double subInterval){
 
@@ -34,6 +57,7 @@ double monteCarlo(long int count,double step){
 
   //time_t timer;
   //time(&timer);
+
 
   for(long int i = 0; i < count/step; i++){
       x = (double)rand()/RAND_MAX;
