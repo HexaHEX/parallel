@@ -86,9 +86,9 @@ void* thread_calc(void* args){
 }
 
 void* load(void* args){
-  int loader = LEFT_B;
+  int loader = 0.000001;
   while(1)
-    loader*=  30000;
+    loader*=  90;
 }
 
 int main(int argc, char* argv[]){
